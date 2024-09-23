@@ -1,0 +1,20 @@
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Ride, Driver
+from .ai_pricing import calculate_dynamic_pricing  # AI pricing function
+@api_view(['POST'])
+def request_ride(request):
+    pickup = request.data.get('pickup_location')
+    dropoff = request.data.get('dropoff_location')
+    # Calculate dynamic pricing using AI
+    distance = 10  # You can calculate this using Google Maps API
+    demand_factor = 1  # This can be predicted using AI
+    traffic_duration = 20  # Can be fetched using Google API
+    price = calculate_dynamic_pricing(distance, demand_factor, traffic_duration)
+    # Assign a driver (simplified)
+    driver = Driver.objects.filter(available=True).first()
+    if driver:
+        driver.available = False
+        driver.save()
+    ride = Ride.objects.create(pickup_location=pickup, dropoff_location=dropoff, price=price, driver=driver)
+    return Response({'price': price, 'driver': {'name': driver.name}})
