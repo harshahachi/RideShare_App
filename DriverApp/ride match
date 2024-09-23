@@ -1,0 +1,45 @@
+import random
+class RideRequest:
+    def __init__(self, rider_id, pickup_location, dropoff_location, language_preference=None):
+        self.rider_id = rider_id
+        self.pickup_location = pickup_location
+        self.dropoff_location = dropoff_location
+        self.language_preference = language_preference
+class RideOffer:
+    def __init__(self, driver_id, current_location, destination, available_seats, language_spoken=None):
+        self.driver_id = driver_id
+        self.current_location = current_location
+        self.destination = destination
+        self.available_seats = available_seats
+        self.language_spoken = language_spoken
+def match_rides(ride_requests, ride_offers):
+    matches = []
+    for request in ride_requests:
+        best_match = None
+        for offer in ride_offers:
+            if offer.available_seats > 0 and \
+               is_route_match(request, offer) and \
+               (request.language_preference is None or request.language_preference == offer.language_spoken):
+                # Simple randomization to demonstrate that generative AI could add variability in matching
+                if not best_match or random.choice([True, False]):
+                   best_match = offer
+        if best_match:
+            matches.append((request.rider_id, best_match.driver_id))
+            best_match.available_seats -= 1
+    return matches
+def is_route_match(ride_request, ride_offer):
+    # For demo purposes, assume a simple distance check
+    # You could use a real geospatial distance algorithm (e.g., Haversine)
+    return ride_request.pickup_location == ride_offer.current_location and \
+           ride_request.dropoff_location == ride_offer.destination
+# Example usage
+ride_requests = [
+    RideRequest(rider_id=1, pickup_location="Location A", dropoff_location="Location B", language_preference="Korean"),
+    RideRequest(rider_id=2, pickup_location="Location A", dropoff_location="Location C"),
+]
+ride_offers = [
+    RideOffer(driver_id=101, current_location="Location A", destination="Location B", available_seats=2, language_spoken="Korean"),
+    RideOffer(driver_id=102, current_location="Location A", destination="Location C", available_seats=1),
+]
+matches = match_rides(ride_requests, ride_offers)
+print(matches)  # Output: [(1, 101), (2, 102)]
